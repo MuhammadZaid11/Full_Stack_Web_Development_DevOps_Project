@@ -28,4 +28,30 @@ async function registerusercontroller(req, res) {
 
 }
 
-module.exports = { registerusercontroller }
+
+async function loginusercontroller(req, res) {
+    const {email, password} = req.body
+
+    const existingUser = await user.findOne({email})
+
+    if (!existingUser) {
+        return res.status(400).json({message: "Invalid email or password"})
+    }
+
+    const isMatch = await bcrypt.compare(password, existingUser.password)
+
+    if (!isMatch) {
+        return res.status(400).json({message: "Invalid email or password"})
+    }
+
+    const token = jwt.sign({id: existingUser._id}, process.env.JWT_SECRET, {expiresIn: '1d'})
+    res.cookie('token', token)
+    res.status(200).json({message: "User logged in successfully", id: existingUser._id, username: existingUser.username, email: existingUser.email})
+}
+
+async function logoutusercontroller(req, res) {
+    res.clearCookie('token')
+    res.status(200).json({message: "User logged out successfully"})
+}
+
+module.exports = { registerusercontroller, loginusercontroller, logoutusercontroller }

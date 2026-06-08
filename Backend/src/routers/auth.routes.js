@@ -1,7 +1,17 @@
 const { Router } = require('express');
-const authcontroller  = require('../controllers/auth.controller');
-const authRouter = Router();
+const authController = require('../controllers/auth.controller');
 
-authRouter.post("/register", au)
+const router = Router();
 
-module.exports = authRouter;
+// basic runtime checks to surface missing controller methods early
+['registerUserController', 'loginUserController', 'logoutUserController'].forEach(fn => {
+	if (typeof authController[fn] !== 'function') {
+		throw new Error(`auth.controller is missing required export: ${fn}`);
+	}
+});
+
+router.post('/register', authController.registerUserController);
+router.post('/login', authController.loginUserController);
+router.get('/logout', authController.logoutUserController);
+
+module.exports = router;
